@@ -1,4 +1,4 @@
-
+var GameInfo = document.querySelector('.GameInfo');
 
 // 1 = wall
 // 2 = blank space
@@ -9,7 +9,7 @@
 var map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 3, 1, 1, 1, 1],
     [1, 3, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
@@ -29,6 +29,8 @@ var pacman = {
     stomach: 0,
     amountOfCoinInMap: 0,
 
+    locationOfcoins: [],
+
     init: function (map) {
         getPosition:
         for (let i = 0; i < map.length; i++) {
@@ -41,7 +43,7 @@ var pacman = {
                 }
             }
         }
-
+        
         getAmountOfCoinInMap:
         for (let i = 0; i < map.length; i++) {
             for (let j = 0; j < map[i].length; j++) {
@@ -51,6 +53,17 @@ var pacman = {
                 }
             }
         }
+
+        getLocationOfCoins:
+        for (let i = 0; i < map.length; i++) {
+            for (let j = 0; j < map[i].length; j++) {
+                const element = map[i][j];
+                if (element === 3) {
+                    this.locationOfcoins.push({x:j,y:i});
+                }
+            }
+        }
+        
     },
 
     Move: function (Arrow) {
@@ -91,7 +104,7 @@ var pacman = {
             default:
                 break;
         }
-
+        
         switch (nextPosition) {
             case 2: // Blank Space => decrease score
                 pacman.EatNothing();
@@ -116,7 +129,6 @@ var pacman = {
         this.stomach += 1;
         if (this.stomach === this.amountOfCoinInMap) {
             console.log('Kết thúc game');
-            alert('EndGame');
         }
     },
 
@@ -132,7 +144,11 @@ pacman.init(map);
 
 document.onkeydown = function (e) {
     pacman.Move(e.key);
-    console.log('Điểm hiện tại: ' + pacman.score);
+    console.log('\n\n\nĐiểm hiện tại: ' + pacman.score);
+    console.log('Vị trí Pacman: ' + pacman.x + '|' + pacman.y);
+    pacman.locationOfcoins.forEach(element => {
+        console.log('Coin đang ở vị trí: '+ element.x + '|' + element.y);
+    });
 }
 
 

@@ -4,7 +4,13 @@
 
 body {
     overflow-x: hidden;
+    overflow-y: hidden;
 }
+
+.game{
+    text-align: center; 
+    display: block;
+} 
 
 .ghost1{
     width: 50px;
