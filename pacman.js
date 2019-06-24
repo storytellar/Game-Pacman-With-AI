@@ -249,6 +249,10 @@ function GetDistance(node1, node2) {
     return Math.sqrt(Math.pow((node1.x - node2.x), 2) + Math.pow((node1.y - node2.y), 2));;
 }
 
+function GetManhattan(node1, node2){
+    return Math.abs(node2.x - node1.x) + Math.abs(node2.y - node1.y);
+}
+
 // Return positions where pacman can change direction
 // Example [{1,1}, {6,1},...]
 function GetNodeWhereCanChangeDirection(map) {
@@ -260,7 +264,7 @@ function GetNodeWhereCanChangeDirection(map) {
             let upValue = map[y - 1][x];
             let rightValue = map[y][x + 1];
             let downValue = map[y + 1][x];
-            if ((leftValue !== 1 || rightValue !== 1) && (upValue !== 1 || downValue !== 1) && value !== 1 && map[y][x] !==5)
+            if ((leftValue !== 1 || rightValue !== 1) && (upValue !== 1 || downValue !== 1) && value !== 1 && value !==5)
                 nodes.push({ x: x, y: y });
         }
     }
@@ -286,7 +290,7 @@ function ShowNodeInMap(nodes, map) {
 }
 
 
-// Return array of nodes if they're nearby a choosed node
+// Return array of nodes if they're nearby a choosen node
 function GetNodeNearby(node ,map) {
     let allNodes = GetNodeWhereCanChangeDirection(map);
     console.log(allNodes);
@@ -308,8 +312,10 @@ function GetNodeNearby(node ,map) {
         if (node.y === tempNodes[i].y && node.x < tempNodes[i].x) {
             for (let j = 0; j < tempNodes.length; j++) {
                 if (node.y === tempNodes[j].y && node.x < tempNodes[j].x) {
-                    if (tempNodes[i].x > tempNodes[j].x)
+                    if (tempNodes[i].x > tempNodes[j].x){
                         tempNodes[i].x = tempNodes[j].x;
+                        tempNodes[i].y = tempNodes[j].y;
+                    }  
                 }
 
             }
@@ -319,8 +325,10 @@ function GetNodeNearby(node ,map) {
         if (node.y === tempNodes[i].y && node.x > tempNodes[i].x) {
             for (let j = 0; j < tempNodes.length; j++) {
                 if (node.y === tempNodes[j].y && node.x > tempNodes[j].x) {
-                    if (tempNodes[i].x < tempNodes[j].x)
+                    if (tempNodes[i].x > tempNodes[j].x){
                         tempNodes[i].x = tempNodes[j].x;
+                        tempNodes[i].y = tempNodes[j].y;
+                    }  
                 }
 
             }
@@ -330,8 +338,10 @@ function GetNodeNearby(node ,map) {
         if (node.x === tempNodes[i].x && node.y > tempNodes[i].y) {
             for (let j = 0; j < tempNodes.length; j++) {
                 if (node.x === tempNodes[i].x && node.y > tempNodes[i].y) {
-                    if (tempNodes[i].y < tempNodes[j].y)
+                    if (tempNodes[i].x > tempNodes[j].x){
+                        tempNodes[i].x = tempNodes[j].x;
                         tempNodes[i].y = tempNodes[j].y;
+                    }  
                 }
 
             }
@@ -341,8 +351,10 @@ function GetNodeNearby(node ,map) {
         if (node.x === tempNodes[i].x && node.y < tempNodes[i].y) {
             for (let j = 0; j < tempNodes.length; j++) {
                 if (node.x === tempNodes[i].x && node.y < tempNodes[i].y) {
-                    if (tempNodes[i].y > tempNodes[j].y)
+                    if (tempNodes[i].x > tempNodes[j].x){
+                        tempNodes[i].x = tempNodes[j].x;
                         tempNodes[i].y = tempNodes[j].y;
+                    }  
                 }
 
             }
@@ -355,6 +367,6 @@ function GetNodeNearby(node ,map) {
     return nodes;
 }
 var nodes = GetNodeNearby(pacman,map);
-// var nodes = GetNodeWhereCanChangeDirection(map);
+//var nodes = GetNodeWhereCanChangeDirection(map);
 ShowNodeInMap(nodes, map);
 // console.log(FindFastestWay(pacman, { x: 11, y: 5 }, map));
