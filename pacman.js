@@ -75,7 +75,7 @@ var pacman = {
                 map[pacman.y][pacman.x] = 2;
                 pacman.x = pacman.x - 1;
                 map[pacman.y][pacman.x] = 5;
-                drawWorld();
+                //drawWorld();
                 break;
             case "ArrowUp":
                 nextPosition = map[pacman.y - 1][pacman.x];
@@ -83,7 +83,7 @@ var pacman = {
                 map[pacman.y][pacman.x] = 2;
                 pacman.y = pacman.y - 1;
                 map[pacman.y][pacman.x] = 5;
-                drawWorld();
+                //drawWorld();
                 break;
             case "ArrowRight":
                 nextPosition = map[pacman.y][pacman.x + 1];
@@ -91,7 +91,7 @@ var pacman = {
                 map[pacman.y][pacman.x] = 2;
                 pacman.x = pacman.x + 1;
                 map[pacman.y][pacman.x] = 5;
-                drawWorld();
+                //drawWorld();
                 break;
             case "ArrowDown":
                 nextPosition = map[pacman.y + 1][pacman.x];
@@ -99,7 +99,7 @@ var pacman = {
                 map[pacman.y][pacman.x] = 2;
                 pacman.y = pacman.y + 1;
                 map[pacman.y][pacman.x] = 5;
-                drawWorld();
+                //drawWorld();
                 break;
             default:
                 break;
@@ -122,6 +122,7 @@ var pacman = {
             default:
                 break;
         }
+        drawWorld();
     },
 
     EatCoin: function () {
