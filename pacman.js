@@ -6,18 +6,17 @@
 // 8 = ghost 2
 var map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1],
     [1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
-
 // Object Pacman
 var pacman = {
     // default position (will be updated with init(map) fucntion )
@@ -140,20 +139,17 @@ var pacman = {
 
 pacman.init(map);
 
-
 // User press key
-document.onkeydown = function (e) {
+/*document.onkeydown = function (e) {
     pacman.Move(e.key);
     console.log('\n\n\nĐiểm hiện tại: ' + pacman.score);
     console.log('Vị trí Pacman: ' + pacman.x + '|' + pacman.y);
     pacman.locationOfcoins.forEach(element => {
         console.log('Coin đang ở vị trí: ' + element.x + '|' + element.y);
     });
-}
-
+}*/
 
 drawWorld();
-
 
 function drawWorld() {
     const World = document.getElementById('world');
@@ -189,10 +185,12 @@ function drawWorld() {
 }
 
 
-
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 // Tìm theo thuật toán a*
-function FindFastestWay(source, dest, map) {
+async function FindFastestWay(source, dest, map) {
     isBlocked = false; // bị chắn bởi tường
     // Nếu đi thẳng là tới được thì return, thoát đệ quy
     if (source.x === dest.x) {
@@ -228,19 +226,30 @@ function FindFastestWay(source, dest, map) {
         }
     }
     if (((source.x === dest.x) || (source.y === dest.y)) && isBlocked == false) {
+        console.log("Final selected node: " + source.x, source.y);
+        await sleep(500);
+        map[source.y][source.x] = 2;
+        map[dest.y][dest.x] = 5; 
+        drawWorld();
         return [{ x: source.x, y: source.y }, dest];
     }
 
-    var nodes = GetNodeNearby(pacman, map);
+    var nodes = GetNodeNearby(source, map);
     var selectedNode = nodes[0];
     var f1, f2;
     for (let i = 1; i < nodes.length; i++) {
-        f1 = GetDistance(selectedNode, dest) + GetDistance(selectedNode, source);
-        f2 = GetDistance(nodes[i], dest) + GetDistance(nodes[i], source);
+        f1 = GetDistance(selectedNode, dest) + GetManhattan(selectedNode, dest);
+        f2 = GetDistance(nodes[i], dest) + GetManhattan(nodes[i], dest);
+        console.log(f1, f2);
         if (f1 > f2) {
             selectedNode = nodes[i];
         }
-    }   
+    }
+    console.log("Seleted node: " + selectedNode.x, selectedNode.y);
+    await sleep(500);
+    map[source.y][source.x] = 2;
+    map[selectedNode.y][selectedNode.x] = 5;        
+    drawWorld();
 
     return [].push(FindFastestWay(selectedNode, dest, map));
 }
@@ -268,7 +277,6 @@ function GetNodeWhereCanChangeDirection(map) {
                 nodes.push({ x: x, y: y });
         }
     }
-    console.log(nodes);
     return nodes;
 }
 
@@ -289,84 +297,53 @@ function ShowNodeInMap(nodes, map) {
     drawWorld();
 }
 
-
 // Return array of nodes if they're nearby a choosen node
 function GetNodeNearby(node ,map) {
+    //Get all key nodes.
     let allNodes = GetNodeWhereCanChangeDirection(map);
-    console.log(allNodes);
-    console.log(map);
-    
-    let tempNodes = [];
-    let nodes = [];
-    // thêm tất cả các nodes cùng hàng cùng cột vào tempNodes
-    for (let i = 0; i < allNodes.length; i++) {
-        if ((node.x === allNodes[i].x && node.y !== allNodes[i].y) || (node.x !== allNodes[i].x && node.y === allNodes[i].y))  {
-            tempNodes.push(allNodes[i]);
-        }
+    //console.log(allNodes);
+    var NearbyNodes = [];
+
+    //Get all nodes that have the same x or y as chosen node
+    let sameRow = allNodes.filter(temp => temp.y === node.y);
+    var farLeft = new Array;
+    var farRight = new Array;
+    for(let i = 0; i < sameRow.length; i++){
+        node.x > sameRow[i].x ? farLeft.push(sameRow[i]) : farRight.push(sameRow[i]);
     }
-    
-    
-    // thêm các node bao vây vào nodes
-    for (let i = 0; i < tempNodes.length; i++) {
-        
-        if (node.y === tempNodes[i].y && node.x < tempNodes[i].x) {
-            for (let j = 0; j < tempNodes.length; j++) {
-                if (node.y === tempNodes[j].y && node.x < tempNodes[j].x) {
-                    if (tempNodes[i].x > tempNodes[j].x){
-                        tempNodes[i].x = tempNodes[j].x;
-                        tempNodes[i].y = tempNodes[j].y;
-                    }  
-                }
+    var leftNodes = farLeft.sort(function(a, b){
+        return Math.abs(a.x - node.x) - Math.abs(b.x - node.x);
+    });
+    var rightNodes = farRight.sort(function(a, b){
+        return Math.abs(a.x - node.x) - Math.abs(b.x - node.x);
+    });
 
-            }
-            if (map[tempNodes[i].x][tempNodes[i].y] !== 5)
-                nodes.push(tempNodes[i]);
-        }
-        if (node.y === tempNodes[i].y && node.x > tempNodes[i].x) {
-            for (let j = 0; j < tempNodes.length; j++) {
-                if (node.y === tempNodes[j].y && node.x > tempNodes[j].x) {
-                    if (tempNodes[i].x > tempNodes[j].x){
-                        tempNodes[i].x = tempNodes[j].x;
-                        tempNodes[i].y = tempNodes[j].y;
-                    }  
-                }
-
-            }
-            if (map[tempNodes[i].x][tempNodes[i].y] !== 5)
-            nodes.push(tempNodes[i]);
-        }
-        if (node.x === tempNodes[i].x && node.y > tempNodes[i].y) {
-            for (let j = 0; j < tempNodes.length; j++) {
-                if (node.x === tempNodes[i].x && node.y > tempNodes[i].y) {
-                    if (tempNodes[i].x > tempNodes[j].x){
-                        tempNodes[i].x = tempNodes[j].x;
-                        tempNodes[i].y = tempNodes[j].y;
-                    }  
-                }
-
-            }
-            if (map[tempNodes[i].x][tempNodes[i].y] !== 5)
-            nodes.push(tempNodes[i]);
-        }
-        if (node.x === tempNodes[i].x && node.y < tempNodes[i].y) {
-            for (let j = 0; j < tempNodes.length; j++) {
-                if (node.x === tempNodes[i].x && node.y < tempNodes[i].y) {
-                    if (tempNodes[i].x > tempNodes[j].x){
-                        tempNodes[i].x = tempNodes[j].x;
-                        tempNodes[i].y = tempNodes[j].y;
-                    }  
-                }
-
-            }
-            if (map[tempNodes[i].x][tempNodes[i].y] !== 5)
-            nodes.push(tempNodes[i]);
-        }
+    let sameCol = allNodes.filter(temp => temp.x === node.x);
+    var farUp = new Array;
+    var farDown = new Array;
+    for(let i = 0; i < sameCol.length; i++){
+        node.y > sameCol[i].y ? farUp.push(sameCol[i]) : farDown.push(sameCol[i]);
     }
-    console.log(nodes);
+    var upNodes = farUp.sort(function(a, b){
+        return Math.abs(a.y - node.y) - Math.abs(b.y - node.y);
+    });
+    var downNodes = farDown.sort(function(a, b){
+        return Math.abs(a.y - node.y) - Math.abs(b.y - node.y);
+    });
+    console.log(farDown);
     
-    return nodes;
+    NearbyNodes.push(leftNodes[0], upNodes[0], rightNodes[0], downNodes[0]);
+    NearbyNodes = NearbyNodes.filter(temp => !(temp === undefined));
+    console.log(NearbyNodes);
+    //ShowNodeInMap(NearbyNodes, map);
+    
+    return NearbyNodes;
 }
-var nodes = GetNodeNearby(pacman,map);
+//var nodes = GetNodeNearby(pacman, map);
 //var nodes = GetNodeWhereCanChangeDirection(map);
-ShowNodeInMap(nodes, map);
+//ShowNodeInMap(nodes, map);
+//GetNodeWhereCanChangeDirection(map);
+var Sel = FindFastestWay(pacman, pacman.locationOfcoins[0] , map);
+//console.log(pacman.locationOfcoins[0]);
+//var nodes = GetNodeWhereCanChangeDirection(map);
 // console.log(FindFastestWay(pacman, { x: 11, y: 5 }, map));
