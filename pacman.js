@@ -13,8 +13,8 @@ var map = [
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1],
     [1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 // Object Pacman
@@ -314,6 +314,7 @@ function GetNodeNearby(node ,map) {
     var leftNodes = farLeft.sort(function(a, b){
         return Math.abs(a.x - node.x) - Math.abs(b.x - node.x);
     });
+
     var rightNodes = farRight.sort(function(a, b){
         return Math.abs(a.x - node.x) - Math.abs(b.x - node.x);
     });
@@ -327,11 +328,56 @@ function GetNodeNearby(node ,map) {
     var upNodes = farUp.sort(function(a, b){
         return Math.abs(a.y - node.y) - Math.abs(b.y - node.y);
     });
+
     var downNodes = farDown.sort(function(a, b){
         return Math.abs(a.y - node.y) - Math.abs(b.y - node.y);
     });
-    console.log(farDown);
+
+    //console.log(farDown);
     
+    
+    var up, down, left, right;
+    up = node.y - 1;
+    down = node.y + 1
+    left = node.x - 1;
+    right = node.x + 1;
+    if(upNodes[0] !== undefined){
+        while(up > upNodes[0].y){
+            if(map[up][node.x] === 1){
+                upNodes[0] = undefined;
+                break;
+            }
+            up--;
+        }
+    }
+    if(downNodes[0] !== undefined){
+        while(down < downNodes[0].y){
+            if(map[down][node.x] === 1){
+                downNodes[0] = undefined;
+                break;
+            }
+            down++;
+        }
+    }
+    if(leftNodes[0] !== undefined){
+        while(left > leftNodes[0].x){
+            if(map[node.y][left] === 1){
+                leftNodes[0] = undefined;
+                break;
+            }
+            left--;
+        }
+    }
+    if(rightNodes[0] !== undefined){
+        while(right < rightNodes[0].x){
+            if(map[node.y][right] === 1){
+                rightNodes[0] = undefined;
+                break;
+            }
+            right++;
+        }
+    }
+
     NearbyNodes.push(leftNodes[0], upNodes[0], rightNodes[0], downNodes[0]);
     NearbyNodes = NearbyNodes.filter(temp => !(temp === undefined));
     console.log(NearbyNodes);
@@ -339,7 +385,7 @@ function GetNodeNearby(node ,map) {
     
     return NearbyNodes;
 }
-//var nodes = GetNodeNearby(pacman, map);
+var nodes = GetNodeNearby(pacman, map);
 //var nodes = GetNodeWhereCanChangeDirection(map);
 //ShowNodeInMap(nodes, map);
 //GetNodeWhereCanChangeDirection(map);
