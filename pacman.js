@@ -7,14 +7,14 @@
 var map = [
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 1, 2, 7, 2, 2, 1, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 1, 2, 2, 3, 2, 2, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1],
+    [1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 1],
-    [1, 1, 1, 1, 2, 1, 2, 1, 2, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 2, 1],
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ];
 // Object Pacman
@@ -22,6 +22,9 @@ var pacman = {
     // default position (will be updated with init(map) fucntion )
     x: -1,
     y: -1,
+    parent: null,
+    g: 0,
+    f: 0,
 
     score: 0,
     stomach: 0,
@@ -61,9 +64,8 @@ var pacman = {
                 }
             }
         }
-
+        
     },
-
     Move: function (Arrow) {
         var nextPositionValue;
         switch (Arrow) {
@@ -137,20 +139,6 @@ var pacman = {
 
 };
 
-pacman.init(map);
-
-// User press key
-/*document.onkeydown = function (e) {
-    pacman.Move(e.key);
-    console.log('\n\n\nĐiểm hiện tại: ' + pacman.score);
-    console.log('Vị trí Pacman: ' + pacman.x + '|' + pacman.y);
-    pacman.locationOfcoins.forEach(element => {
-        console.log('Coin đang ở vị trí: ' + element.x + '|' + element.y);
-    });
-}*/
-
-drawWorld();
-
 function drawWorld() {
     const World = document.getElementById('world');
     World.innerHTML = "";
@@ -184,74 +172,8 @@ function drawWorld() {
     }
 }
 
-
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Tìm theo thuật toán a*
-async function FindFastestWay(source, dest, map) {
-    isBlocked = false; // bị chắn bởi tường
-    // Nếu đi thẳng là tới được thì return, thoát đệ quy
-    if (source.x === dest.x) {
-        if (source.y < dest.y) {
-            for (let i = source.y + 1; i < dest.y; i++) {
-                if (map[i][source.x] === 1) {
-                    isBlocked = true;
-                }
-            }
-        }
-        else {
-            for (let i = source.y - 1; dest.y < i; i--) {
-                if (map[i][source.x] === 1) {
-                    isBlocked = true;
-                }
-            }
-        }
-    }
-    if (source.y === dest.y) {
-        if (source.x < dest.x) {
-            for (let i = source.x + 1; i < dest.x; i++) {
-                if (map[source.y][i] === 1) {
-                    isBlocked = true;
-                }
-            }
-        }
-        else{
-            for (let i = source.x ; i> dest.x; i--) {
-                if (map[source.y][i] === 1) {
-                    isBlocked = true;
-                }
-            }
-        }
-    }
-    if (((source.x === dest.x) || (source.y === dest.y)) && isBlocked == false) {
-        console.log("Final selected node: " + source.x, source.y);
-        await sleep(500);
-        map[source.y][source.x] = 2;
-        map[dest.y][dest.x] = 5; 
-        drawWorld();
-        return [{ x: source.x, y: source.y }, dest];
-    }
-
-    var nodes = GetNodeNearby(source, map);
-    var selectedNode = nodes[0];
-    var f1, f2;
-    for (let i = 1; i < nodes.length; i++) {
-        f1 = GetDistance(selectedNode, dest) + GetManhattan(selectedNode, dest);
-        f2 = GetDistance(nodes[i], dest) + GetManhattan(nodes[i], dest);
-        console.log(f1, f2);
-        if (f1 > f2) {
-            selectedNode = nodes[i];
-        }
-    }
-    console.log("Seleted node: " + selectedNode.x, selectedNode.y);
-    await sleep(500);
-    map[source.y][source.x] = 2;
-    map[selectedNode.y][selectedNode.x] = 5;        
-    drawWorld();
-
-    return [].push(FindFastestWay(selectedNode, dest, map));
 }
 
 function GetDistance(node1, node2) {
@@ -262,22 +184,13 @@ function GetManhattan(node1, node2){
     return Math.abs(node2.x - node1.x) + Math.abs(node2.y - node1.y);
 }
 
-// Return positions where pacman can change direction
-// Example [{1,1}, {6,1},...]
-function GetNodeWhereCanChangeDirection(map) {
-    let nodes = [];
-    for (let y = 1; y < map.length - 1; y++) {
-        for (let x = 1; x < map[y].length - 1; x++) {
-            let value = map[y][x];
-            let leftValue = map[y][x - 1];
-            let upValue = map[y - 1][x];
-            let rightValue = map[y][x + 1];
-            let downValue = map[y + 1][x];
-            if ((leftValue !== 1 || rightValue !== 1) && (upValue !== 1 || downValue !== 1) && value !== 1 && value !==5)
-                nodes.push({ x: x, y: y });
+function isInArray(arr, obj){
+    for(let i = 0; i < arr.length; i++){
+        if(arr[i].x === obj.x && arr[i].y === obj.y){
+            return true;
         }
     }
-    return nodes;
+    return false;
 }
 
 // Show Node In Map With New Value and draw it
@@ -297,99 +210,111 @@ function ShowNodeInMap(nodes, map) {
     drawWorld();
 }
 
-// Return array of nodes if they're nearby a choosen node
-function GetNodeNearby(node ,map) {
-    //Get all key nodes.
-    let allNodes = GetNodeWhereCanChangeDirection(map);
-    //console.log(allNodes);
-    var NearbyNodes = [];
-
-    //Get all nodes that have the same x or y as chosen node
-    let sameRow = allNodes.filter(temp => temp.y === node.y);
-    var farLeft = new Array;
-    var farRight = new Array;
-    for(let i = 0; i < sameRow.length; i++){
-        node.x > sameRow[i].x ? farLeft.push(sameRow[i]) : farRight.push(sameRow[i]);
+// Get directions where pacman can reach
+function GetChilds(node, map){
+    var res = [];
+    if(map[node.y][node.x + 1] !== 1 && map[node.y][node.x + 1] !== 7){
+        res.push({x: node.x + 1, y: node.y});
     }
-    var leftNodes = farLeft.sort(function(a, b){
-        return Math.abs(a.x - node.x) - Math.abs(b.x - node.x);
-    });
-
-    var rightNodes = farRight.sort(function(a, b){
-        return Math.abs(a.x - node.x) - Math.abs(b.x - node.x);
-    });
-
-    let sameCol = allNodes.filter(temp => temp.x === node.x);
-    var farUp = new Array;
-    var farDown = new Array;
-    for(let i = 0; i < sameCol.length; i++){
-        node.y > sameCol[i].y ? farUp.push(sameCol[i]) : farDown.push(sameCol[i]);
+    if(map[node.y][node.x - 1] !== 1 && map[node.y][node.x - 1] !== 7){
+        res.push({x: node.x - 1, y: node.y});
     }
-    var upNodes = farUp.sort(function(a, b){
-        return Math.abs(a.y - node.y) - Math.abs(b.y - node.y);
-    });
-
-    var downNodes = farDown.sort(function(a, b){
-        return Math.abs(a.y - node.y) - Math.abs(b.y - node.y);
-    });
-
-    //console.log(farDown);
-    
-    
-    var up, down, left, right;
-    up = node.y - 1;
-    down = node.y + 1
-    left = node.x - 1;
-    right = node.x + 1;
-    if(upNodes[0] !== undefined){
-        while(up > upNodes[0].y){
-            if(map[up][node.x] === 1){
-                upNodes[0] = undefined;
-                break;
-            }
-            up--;
-        }
+    if(map[node.y + 1][node.x] !== 1 && map[node.y + 1][node.x] !== 7){
+        res.push({x: node.x, y: node.y + 1});
     }
-    if(downNodes[0] !== undefined){
-        while(down < downNodes[0].y){
-            if(map[down][node.x] === 1){
-                downNodes[0] = undefined;
-                break;
-            }
-            down++;
-        }
+    if(map[node.y - 1][node.x] !== 1 && map[node.y - 1][node.x] !== 7){
+        res.push({x: node.x, y: node.y - 1});
     }
-    if(leftNodes[0] !== undefined){
-        while(left > leftNodes[0].x){
-            if(map[node.y][left] === 1){
-                leftNodes[0] = undefined;
-                break;
-            }
-            left--;
-        }
-    }
-    if(rightNodes[0] !== undefined){
-        while(right < rightNodes[0].x){
-            if(map[node.y][right] === 1){
-                rightNodes[0] = undefined;
-                break;
-            }
-            right++;
-        }
-    }
-
-    NearbyNodes.push(leftNodes[0], upNodes[0], rightNodes[0], downNodes[0]);
-    NearbyNodes = NearbyNodes.filter(temp => !(temp === undefined));
-    console.log(NearbyNodes);
-    //ShowNodeInMap(NearbyNodes, map);
-    
-    return NearbyNodes;
+    return res;
 }
-var nodes = GetNodeNearby(pacman, map);
-//var nodes = GetNodeWhereCanChangeDirection(map);
-//ShowNodeInMap(nodes, map);
-//GetNodeWhereCanChangeDirection(map);
-var Sel = FindFastestWay(pacman, pacman.locationOfcoins[0] , map);
-//console.log(pacman.locationOfcoins[0]);
-//var nodes = GetNodeWhereCanChangeDirection(map);
-// console.log(FindFastestWay(pacman, { x: 11, y: 5 }, map));
+
+// Search for the path with a* algorithm
+function astar(source, dest, map){
+    var openList = [];
+    var closedList = [];
+
+    openList.push(source);
+    while(openList.length > 0){
+        // Find the direction with the lowest f in open list
+        var lowInd = 0;
+        for(let i = 0; i < openList.length; i++){
+            if(openList[i].f < openList[lowInd].f){
+                lowInd = i;
+            }
+        }
+        // this direction will be our current node.
+        var currentNode = openList[lowInd];
+
+        //#region If current node is destination
+        if (((currentNode.x === dest.x) && (currentNode.y === dest.y))) {
+            var cur = currentNode;
+            var result = [];
+            result.push(cur);
+            while(cur.parent){
+                result.push(cur.parent);
+                cur = cur.parent;
+            }
+            return result.reverse();
+        }
+        //#endregion
+
+        // Remove current node from open list
+        openList = openList.filter(temp => !(temp.x === currentNode.x && temp.y === currentNode.y));
+        // Then add it to closed list
+        closedList.push(currentNode);
+
+        // Get directions where pacman can reach
+        var childs = GetChilds(currentNode, map);
+
+        // For each direction
+        for(let i = 0; i < childs.length; i++){
+            var child = childs[i];
+            child.parent = currentNode;
+            child.g = GetDistance(child, currentNode) + currentNode.g;
+            child.h = GetManhattan(child, dest);
+            child.f = child.g + child.h;
+
+            // If direction has already been reach before, skip this direction.
+            if(isInArray(closedList, child)){
+                continue;
+            }
+
+            // If this is the first time we've reached this direction, add it to our open list.
+            if(!isInArray(openList, child)){
+                openList.push(child);
+            }
+            // if it's already been added to our open list, check if previously it had worst f.
+            else {
+                for(let j = 0; j < openList.length; j++){
+                    if(child.x === openList[j].x && child.y === openList[j].y){
+                        if(child.f < openList[j].f){
+                            openList[j].f = child.f;
+                            openList.parent = child.parent;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return [];
+}
+
+// Pacman goes for the coin.
+async function Go(start, dest, map){
+    var fastestPath = astar(start, dest, map);
+
+    var prev = start;
+    for(let i = 0; i < fastestPath.length; i++){
+        await sleep(500);
+        map[prev.y][prev.x] = 2;
+        map[fastestPath[i].y][fastestPath[i].x] = 5;
+        prev = fastestPath[i];
+        drawWorld();
+    }
+}
+
+pacman.init(map);
+
+drawWorld();
+
+Go(pacman, pacman.locationOfcoins[0], map);
