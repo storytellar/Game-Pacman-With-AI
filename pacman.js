@@ -32,9 +32,10 @@ var pacman = {
     g: 0,
     f: 0,
 
-    score: 0,
     stomach: 0,
     amountOfCoinInMap: 0,
+    score: 0,
+    pathLength: 0,
 
     locationOfcoins: [],
 
@@ -70,79 +71,7 @@ var pacman = {
                 }
             }
         }
-
     },
-    Move: function (Arrow) {
-        var nextPositionValue;
-        switch (Arrow) {
-            case "ArrowLeft":
-                nextPositionValue = map[pacman.y][pacman.x - 1];
-                if (nextPositionValue === 1) return;
-                map[pacman.y][pacman.x] = 2;
-                pacman.x = pacman.x - 1;
-                map[pacman.y][pacman.x] = 5;
-                //drawWorld();
-                break;
-            case "ArrowUp":
-                nextPositionValue = map[pacman.y - 1][pacman.x];
-                if (nextPositionValue === 1) return;
-                map[pacman.y][pacman.x] = 2;
-                pacman.y = pacman.y - 1;
-                map[pacman.y][pacman.x] = 5;
-                //drawWorld();
-                break;
-            case "ArrowRight":
-                nextPositionValue = map[pacman.y][pacman.x + 1];
-                if (nextPositionValue === 1) return;
-                map[pacman.y][pacman.x] = 2;
-                pacman.x = pacman.x + 1;
-                map[pacman.y][pacman.x] = 5;
-                //drawWorld();
-                break;
-            case "ArrowDown":
-                nextPositionValue = map[pacman.y + 1][pacman.x];
-                if (nextPositionValue === 1) return;
-                map[pacman.y][pacman.x] = 2;
-                pacman.y = pacman.y + 1;
-                map[pacman.y][pacman.x] = 5;
-                //drawWorld();
-                break;
-            default:
-                break;
-        }
-
-        switch (nextPositionValue) {
-            case 2: // Blank Space => decrease score
-                pacman.EatNothing();
-                break;
-            case 3: // Coin
-                pacman.EatCoin();
-                break;
-            case 7: // Ghost
-                // code...
-                console.log('hù! ma nè');
-                break;
-            case 8: // Ghost
-                // code...
-                break;
-            default:
-                break;
-        }
-        drawWorld();
-    },
-
-    EatCoin: function () {
-        this.score += 20;
-        this.stomach += 1;
-        if (this.stomach === this.amountOfCoinInMap) {
-            console.log('Kết thúc game');
-        }
-    },
-
-    EatNothing: function () {
-        this.score -= 1;
-    },
-
 };
 
 function drawWorld() {
@@ -197,23 +126,6 @@ function isInArray(arr, obj) {
         }
     }
     return false;
-}
-
-// Show Node In Map With New Value and draw it
-// Input: Array of Node
-function ShowNodeInMap(nodes, map) {
-    for (let i = 0; i < nodes.length; i++) {
-        node = nodes[i];
-        for (let y = 1; y < map.length - 1; y++) {
-            for (let x = 1; x < map[y].length - 1; x++) {
-                if (y == node.y && x == node.x) {
-                    // new value
-                    map[y][x] = 8;
-                }
-            }
-        }
-    }
-    drawWorld();
 }
 
 // Get directions where pacman can reach
@@ -310,13 +222,26 @@ async function Go(start, dest, map) {
     var fastestPath = astar(start, dest, map);
 
     var prev = start;
-    for (let i = 0; i < fastestPath.length; i++) {
-        await sleep(500);
+    var score = 0;
+    var pathLength = 0;
+    for (let i = 1; i < fastestPath.length; i++) {
+        await sleep(50);
+        let isCoin = map[fastestPath[i].y][fastestPath[i].x];
         map[prev.y][prev.x] = 2;
         map[fastestPath[i].y][fastestPath[i].x] = 5;
         prev = fastestPath[i];
+        pathLength += 1;
+        if(isCoin === 3){
+            score += 20;
+        }
+        else{
+            score -= 1;
+        }
         drawWorld();
     }
+    await sleep(100);
+    alert("Total points: " + score);
+    alert("Path length: " + pathLength);
 }
 
 pacman.init(map);
@@ -325,4 +250,3 @@ drawWorld();
 
 Go(pacman, pacman.locationOfcoins[0], map);
 }
-
