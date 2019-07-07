@@ -1,22 +1,28 @@
+const electron = require('electron');
+const { ipcRenderer } = electron;
+const ul = document.querySelector('ul');
+
+
 // 1 = wall
 // 2 = blank space
 // 3 = coin
 // 5 = pacman
 // 7 = ghost 1
 // 8 = ghost 2
-var map = [
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 5, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 1, 2, 7, 2, 2, 1, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 1, 2, 2, 3, 2, 2, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 1, 2, 2, 2, 2, 1, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 2, 2, 2, 1],
-    [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-];
+var map = require('./maps/map.json');
+
+ipcRenderer.on('map:new', function (e, path) {
+    console.log(path[0]);
+    map = require(path[0]);
+    main();
+});
+
+main();
+
+
+function main(){
+
+
 // Object Pacman
 var pacman = {
     // default position (will be updated with init(map) fucntion )
@@ -64,7 +70,7 @@ var pacman = {
                 }
             }
         }
-        
+
     },
     Move: function (Arrow) {
         var nextPositionValue;
@@ -180,13 +186,13 @@ function GetDistance(node1, node2) {
     return Math.sqrt(Math.pow((node1.x - node2.x), 2) + Math.pow((node1.y - node2.y), 2));;
 }
 
-function GetManhattan(node1, node2){
+function GetManhattan(node1, node2) {
     return Math.abs(node2.x - node1.x) + Math.abs(node2.y - node1.y);
 }
 
-function isInArray(arr, obj){
-    for(let i = 0; i < arr.length; i++){
-        if(arr[i].x === obj.x && arr[i].y === obj.y){
+function isInArray(arr, obj) {
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i].x === obj.x && arr[i].y === obj.y) {
             return true;
         }
     }
@@ -211,34 +217,34 @@ function ShowNodeInMap(nodes, map) {
 }
 
 // Get directions where pacman can reach
-function GetChilds(node, map){
+function GetChilds(node, map) {
     var res = [];
-    if(map[node.y][node.x + 1] !== 1 && map[node.y][node.x + 1] !== 7){
-        res.push({x: node.x + 1, y: node.y});
+    if (map[node.y][node.x + 1] !== 1 && map[node.y][node.x + 1] !== 7) {
+        res.push({ x: node.x + 1, y: node.y });
     }
-    if(map[node.y][node.x - 1] !== 1 && map[node.y][node.x - 1] !== 7){
-        res.push({x: node.x - 1, y: node.y});
+    if (map[node.y][node.x - 1] !== 1 && map[node.y][node.x - 1] !== 7) {
+        res.push({ x: node.x - 1, y: node.y });
     }
-    if(map[node.y + 1][node.x] !== 1 && map[node.y + 1][node.x] !== 7){
-        res.push({x: node.x, y: node.y + 1});
+    if (map[node.y + 1][node.x] !== 1 && map[node.y + 1][node.x] !== 7) {
+        res.push({ x: node.x, y: node.y + 1 });
     }
-    if(map[node.y - 1][node.x] !== 1 && map[node.y - 1][node.x] !== 7){
-        res.push({x: node.x, y: node.y - 1});
+    if (map[node.y - 1][node.x] !== 1 && map[node.y - 1][node.x] !== 7) {
+        res.push({ x: node.x, y: node.y - 1 });
     }
     return res;
 }
 
 // Search for the path with a* algorithm
-function astar(source, dest, map){
+function astar(source, dest, map) {
     var openList = [];
     var closedList = [];
 
     openList.push(source);
-    while(openList.length > 0){
+    while (openList.length > 0) {
         // Find the direction with the lowest f in open list
         var lowInd = 0;
-        for(let i = 0; i < openList.length; i++){
-            if(openList[i].f < openList[lowInd].f){
+        for (let i = 0; i < openList.length; i++) {
+            if (openList[i].f < openList[lowInd].f) {
                 lowInd = i;
             }
         }
@@ -250,7 +256,7 @@ function astar(source, dest, map){
             var cur = currentNode;
             var result = [];
             result.push(cur);
-            while(cur.parent){
+            while (cur.parent) {
                 result.push(cur.parent);
                 cur = cur.parent;
             }
@@ -267,7 +273,7 @@ function astar(source, dest, map){
         var childs = GetChilds(currentNode, map);
 
         // For each direction
-        for(let i = 0; i < childs.length; i++){
+        for (let i = 0; i < childs.length; i++) {
             var child = childs[i];
             child.parent = currentNode;
             child.g = GetDistance(child, currentNode) + currentNode.g;
@@ -275,19 +281,19 @@ function astar(source, dest, map){
             child.f = child.g + child.h;
 
             // If direction has already been reach before, skip this direction.
-            if(isInArray(closedList, child)){
+            if (isInArray(closedList, child)) {
                 continue;
             }
 
             // If this is the first time we've reached this direction, add it to our open list.
-            if(!isInArray(openList, child)){
+            if (!isInArray(openList, child)) {
                 openList.push(child);
             }
             // if it's already been added to our open list, check if previously it had worst f.
             else {
-                for(let j = 0; j < openList.length; j++){
-                    if(child.x === openList[j].x && child.y === openList[j].y){
-                        if(child.f < openList[j].f){
+                for (let j = 0; j < openList.length; j++) {
+                    if (child.x === openList[j].x && child.y === openList[j].y) {
+                        if (child.f < openList[j].f) {
                             openList[j].f = child.f;
                             openList.parent = child.parent;
                         }
@@ -300,11 +306,11 @@ function astar(source, dest, map){
 }
 
 // Pacman goes for the coin.
-async function Go(start, dest, map){
+async function Go(start, dest, map) {
     var fastestPath = astar(start, dest, map);
 
     var prev = start;
-    for(let i = 0; i < fastestPath.length; i++){
+    for (let i = 0; i < fastestPath.length; i++) {
         await sleep(500);
         map[prev.y][prev.x] = 2;
         map[fastestPath[i].y][fastestPath[i].x] = 5;
@@ -318,3 +324,5 @@ pacman.init(map);
 drawWorld();
 
 Go(pacman, pacman.locationOfcoins[0], map);
+}
+

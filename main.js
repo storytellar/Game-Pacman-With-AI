@@ -1,18 +1,17 @@
 const electron = require('electron');
 const url = require('url');
 const path = require('path');
-// test
 
-const {app, BrowserWindow, Menu, ipcMain} = electron;
+const { app, BrowserWindow, Menu, ipcMain } = electron;
 
-// process.env.NODE_ENV = 'production';
+//process.env.NODE_ENV = 'production';
 
 let mainWindow;
 
-app.on('ready',function(){
+app.on('ready', function () {
     mainWindow = new BrowserWindow({
-        width: 689,
-        height: 624,
+        width: 730,
+        height: 570,
         webPreferences: {
             nodeIntegration: true
         }
@@ -24,23 +23,33 @@ app.on('ready',function(){
         slashes: true
     }));
 
-    mainWindow.on('close',()=>app.quit());
+    mainWindow.on('close', () => app.quit());
 
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
 
     Menu.setApplicationMenu(mainMenu);
+
 });
 
 
 
 const mainMenuTemplate = [
     {
-        label: 'default',
+        label: 'Menu',
         submenu: [
             {
-                label : 'Quit',
+                label: 'New map',
+                accelerator: process.platform == 'darwin' ? 'Command+N' : 'Ctrl+N',
+                click() {
+                    const {dialog} = require('electron');
+                    let mapPath = dialog.showOpenDialog({ properties: ['openFile'] });
+                    mainWindow.webContents.send('map:new', mapPath);
+                }
+            },
+            {
+                label: 'Quit',
                 accelerator: process.platform == 'darwin' ? 'Command+Q' : 'Ctrl+Q',
-                click(){
+                click() {
                     app.quit();
                 }
             },
@@ -48,22 +57,22 @@ const mainMenuTemplate = [
     },
 ];
 
-if(process.platform!=='darwin'){
-    mainMenuTemplate.unshift({});
-}
+// if (process.platform !== 'darwin') {
+//     mainMenuTemplate.unshift({});
+// }
 
-if(process.env.NODE_ENV !== 'production'){
+if (process.env.NODE_ENV !== 'production') {
     mainMenuTemplate.push({
         label: 'Developer Tools',
         submenu: [
             {
                 label: 'Toggle DevTools',
                 accelerator: process.platform == 'darwin' ? 'Command+I' : 'Ctrl+I',
-                click(item, focusedWindow){
+                click(item, focusedWindow) {
                     focusedWindow.toggleDevTools();
-                    
+
                 }
-                
+
             },
             {
                 role: 'reload'
